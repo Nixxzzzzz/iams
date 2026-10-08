@@ -1,6 +1,7 @@
 {
-  "name": "temp-app",
+  "name": "asset-management-portal",
   "version": "0.1.0",
+  "description": "Professional Asset Management System Portal for physical and digital assets",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,9 +10,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.53.0",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
