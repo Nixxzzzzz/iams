@@ -1,57 +1,60 @@
-import { ShieldAlert, Lock } from 'lucide-react';
+import React from 'react';
+import { Lock } from 'lucide-react';
 import { siteConfig } from '@/config/site';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 /**
- * Authentication Entry Point Placeholder
+ * Authentication Entry Point Structural Placeholder
  * Route: /login
  *
  * Source of Truth: docs/ARCHITECTURE.md §3, docs/UI_UX_GUIDELINES.md §1
- * INVARIANT: No fake OAuth execution, no bypass buttons, no AI gradients.
+ * INVARIANT: No fake OAuth execution, no mock bypass, zero fake credentials.
  */
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
-        <div className="flex flex-col items-center text-center space-y-2 mb-6">
-          <div className="w-12 h-12 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-semibold text-slate-900">{siteConfig.name}</h1>
-          <p className="text-sm text-slate-600">{siteConfig.organization.name}</p>
-        </div>
-
-        <div className="border border-amber-200 bg-amber-50 rounded-md p-4 mb-6">
-          <div className="flex items-start space-x-3">
-            <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-800 space-y-1">
-              <p className="font-semibold">Authentication Required</p>
-              <p>
-                Access to this enterprise portal requires authentication through the organization Google Workspace OAuth service.
-              </p>
-              <p className="text-amber-700 pt-1">
-                Stage 1 Baseline: Google OAuth integration point will be activated in the dedicated integration stage following administrative domain configuration.
-              </p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950 px-4 py-12">
+      <Card className="w-full max-w-md shadow-sm">
+        <CardContent className="p-8 space-y-6">
+          <div className="flex flex-col items-center text-center space-y-2">
+            <div className="w-12 h-12 rounded-md bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 flex items-center justify-center text-slate-700 dark:text-slate-300">
+              <Lock className="w-6 h-6" />
             </div>
+            <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+              {siteConfig.name}
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {siteConfig.organization.name}
+            </p>
           </div>
-        </div>
 
-        <div className="space-y-4">
-          <button
-            type="button"
-            disabled
-            className="w-full flex items-center justify-center py-2.5 px-4 rounded-md text-sm font-medium text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed"
+          <Alert
+            variant="warning"
+            title="Authentication Pending Integration"
           >
-            Google Workspace Sign-In (Pending Stage Authorization)
-          </button>
-        </div>
+            Access requires Google Workspace OAuth. Sign-in controls are disabled pending Stage 4 OAuth integration authorization.
+          </Alert>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-500">
-            Authorized Personnel Only • All access attempts are recorded in the security audit ledger.
-          </p>
-        </div>
-      </div>
+          <div>
+            <Button
+              variant="outline"
+              size="lg"
+              disabled
+              className="w-full text-slate-400 dark:text-slate-500 cursor-not-allowed"
+            >
+              Google Workspace Sign-In (Pending Authorization)
+            </Button>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Authorized Personnel Only • Access boundary enforced
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
