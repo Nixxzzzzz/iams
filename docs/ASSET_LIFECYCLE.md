@@ -104,17 +104,22 @@ stateDiagram-v2
 ### 4.1 Check-Out Protocol (Short-Term & Long-Term)
 1. **Identification:** Asset Manager locates asset via search or scans physical QR code on asset label.
 2. **Eligibility Verification:** System verifies asset status is `AVAILABLE` and condition is operational.
-3. **Assignee Selection:** Asset Manager searches and selects employee from active user registry.
+3. **Assignee Selection (User or Department):** 
+   - For personal custody: Asset Manager selects active employee (`user_id`).
+   - For shared departmental custody: Asset Manager selects department (`department_id`, e.g., Computer Science Dept, AIML Lab).
 4. **Checkout Parameters:**
+   - Custody Type: `USER` or `DEPARTMENT`.
    - Assignment Type: `LONG_TERM` (indefinite) or `TEMPORARY_CHECKOUT` (short-term).
    - Expected Return Date: Required for temporary checkout; optional for long-term.
    - Accessory Checklist: Charger, cables, adapter, protective bag, peripherals.
    - Handover Condition Sign-off: Record current condition (`EXCELLENT`, `GOOD`, `FAIR`).
 5. **Execution:**
    - Status updates to `ASSIGNED` or `CHECKED_OUT`.
+   - `Assets.custody_type` updated to `USER` or `DEPARTMENT`.
+   - If User custody: `Assets.current_user_id` updated. If Department custody: `Assets.department_id` updated and `current_user_id = NULL`.
    - New row appended to `Assignments`.
    - New row appended to `Transactions`.
-   - Notification sent to recipient email with asset tag, model, serial number, and custody agreement link.
+   - Notification sent to recipient email or department manager with asset tag, model, serial number, and custody details.
 
 ### 4.2 Check-In & Return Protocol
 1. **Intake Scan:** Custodian returns gear to IT. Manager scans asset QR code.

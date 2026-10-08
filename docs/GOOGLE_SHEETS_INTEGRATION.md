@@ -49,26 +49,70 @@ Only minimal least-privilege scopes are requested during server initialization:
 
 ---
 
-## 3. Initial Workbook Structure & Tab Catalog
+## 3. Final Workbook Structure & Exact Tab Header Catalog
 
-The primary Google Spreadsheet consists of 14 dedicated tabs:
+The primary Google Spreadsheet consists of 14 dedicated tabs. **Row 1 of every sheet contains the exact column headers in the precise order specified below. No title banners, merged cells, or decorative rows are permitted.**
 
-| Sheet Tab Name | Initial Primary Key | Row Model | Purpose & Data Volume Estimate |
-|---|---|---|---|
-| `Assets` | `asset_id` | 1 row per physical/digital asset | Master registry (1,000 - 50,000 rows). |
-| `Users` | `user_id` | 1 row per organizational user | Employee & admin directory (50 - 5,000 rows). |
-| `Categories` | `category_id` | 1 row per asset category | Taxonomy catalog (20 - 100 rows). Cached. |
-| `Departments` | `department_id` | 1 row per department/cost center | Org unit hierarchy (10 - 50 rows). Cached. |
-| `Locations` | `location_id` | 1 row per physical room/rack | Physical site layout (20 - 200 rows). Cached. |
-| `Assignments` | `assignment_id` | 1 row per custody agreement | Active and historical custody links. |
-| `Transactions` | `transaction_id` | **Append-only ledger** | Every state/custody event. High volume. |
-| `Maintenance` | `maintenance_id` | 1 row per service ticket | Repair, RMA, and scheduled PM tickets. |
-| `Requests` | `request_id` | 1 row per equipment request | Multi-stage requisition workflow tickets. |
-| `Vendors` | `vendor_id` | 1 row per supplier/vendor | Vendor directory & SLA records. Cached. |
-| `Documents` | `document_id` | 1 row per attached document | Metadata linked to Google Drive File IDs. |
-| `Notifications` | `notification_id`| 1 row per user alert | In-app notification queue. |
-| `Audit Logs` | `log_id` | **Append-only ledger** | Security, auth, and state mutation audits. |
-| `Settings` | `key` | 1 row per system key-value pair | Org parameters, sequence counters. Cached. |
+| Sheet Tab Name | Primary Key | Total Columns | Purpose & Row Model |
+|---|---|:---:|---|
+| `Assets` | `asset_id` | 30 | Master asset inventory registry (1 row per asset). |
+| `Users` | `user_id` | 12 | Employee & admin directory, roles, auth identifiers (1 row per user). |
+| `Categories` | `category_id` | 10 | Equipment taxonomy catalog, default life, custom specs template (1 row per category). |
+| `Departments` | `department_id` | 9 | Organizational cost centers & departmental custody holders (1 row per department). |
+| `Locations` | `location_id` | 9 | Hierarchical physical locations: Site -> Building -> Floor -> Room -> Storage Area (1 row per location). |
+| `Assignments` | `assignment_id` | 17 | Custody contracts for User OR Department (1 row per assignment). |
+| `Transactions` | `transaction_id` | 10 | **Append-only operational history ledger** (1 row per event, immutable). |
+| `Maintenance` | `maintenance_id` | 19 | Repair tickets, preventive maintenance, vendor RMAs, costs (1 row per ticket). |
+| `Requests` | `request_id` | 18 | Multi-stage hardware requisition workflow (1 row per request). |
+| `Vendors` | `vendor_id` | 13 | Suppliers, repair contractors, warranty contacts (1 row per vendor). |
+| `Documents` | `document_id` | 10 | File attachments linked to Google Drive File IDs (1 row per document). |
+| `Notifications` | `notification_id`| 9 | In-app user notifications queue (1 row per alert). |
+| `Audit Logs` | `audit_id` | 11 | **Append-only security and administrative audit log** (1 row per audit event, immutable). |
+| `Settings` | `key` | 8 | Organization parameters, sequence counters, OAuth domain policies (1 row per key). |
+
+### 3.1 Exact Row 1 Column Headers per Sheet
+
+1. **`Assets`**  
+   `asset_id`, `asset_tag`, `name`, `category_id`, `subcategory`, `brand`, `model`, `serial_number`, `description`, `status`, `condition`, `custody_type`, `department_id`, `location_id`, `current_user_id`, `current_assignment_id`, `purchase_date`, `purchase_cost`, `useful_life_months`, `current_value`, `currency`, `vendor_id`, `invoice_reference`, `warranty_start`, `warranty_expiry`, `custom_fields`, `is_archived`, `created_at`, `updated_at`, `archived_at`
+
+2. **`Users`**  
+   `user_id`, `email`, `first_name`, `last_name`, `phone`, `role`, `department_id`, `job_title`, `status`, `auth_provider_id`, `created_at`, `updated_at`
+
+3. **`Categories`**  
+   `category_id`, `name`, `code`, `description`, `parent_category_id`, `default_useful_life_months`, `spec_schema_json`, `status`, `created_at`, `updated_at`
+
+4. **`Departments`**  
+   `department_id`, `name`, `code`, `description`, `manager_user_id`, `budget_code`, `status`, `created_at`, `updated_at`
+
+5. **`Locations`**  
+   `location_id`, `name`, `location_type`, `parent_location_id`, `code`, `address`, `status`, `created_at`, `updated_at`
+
+6. **`Assignments`**  
+   `assignment_id`, `asset_id`, `custody_type`, `user_id`, `department_id`, `assignment_type`, `assigned_at`, `expected_return_at`, `returned_at`, `assigned_condition`, `returned_condition`, `assigned_by`, `returned_by`, `status`, `notes`, `created_at`, `updated_at`
+
+7. **`Transactions`**  
+   `transaction_id`, `asset_id`, `transaction_type`, `timestamp`, `performed_by`, `previous_state`, `new_state`, `related_assignment_id`, `notes`, `metadata`
+
+8. **`Maintenance`**  
+   `maintenance_id`, `asset_id`, `maintenance_type`, `issue`, `description`, `priority`, `status`, `reported_by`, `assigned_to`, `vendor_id`, `reported_at`, `started_at`, `completed_at`, `estimated_cost`, `actual_cost`, `resolution`, `notes`, `created_at`, `updated_at`
+
+9. **`Requests`**  
+   `request_id`, `request_number`, `requester_user_id`, `department_id`, `category_id`, `requested_asset_id`, `reason`, `priority`, `status`, `dept_approver_user_id`, `dept_approved_at`, `asset_approver_user_id`, `asset_approved_at`, `rejection_reason`, `fulfilled_asset_id`, `fulfilled_assignment_id`, `created_at`, `updated_at`
+
+10. **`Vendors`**  
+    `vendor_id`, `name`, `vendor_type`, `contact_name`, `email`, `phone`, `address`, `website`, `tax_identifier`, `notes`, `status`, `created_at`, `updated_at`
+
+11. **`Documents`**  
+    `document_id`, `asset_id`, `document_type`, `file_name`, `drive_file_id`, `mime_type`, `file_size_bytes`, `uploaded_by`, `uploaded_at`, `description`
+
+12. **`Notifications`**  
+    `notification_id`, `user_id`, `type`, `title`, `message`, `link_url`, `is_read`, `read_at`, `created_at`
+
+13. **`Audit Logs`**  
+    `audit_id`, `timestamp`, `actor_user_id`, `action`, `entity_type`, `entity_id`, `before_state`, `after_state`, `ip_address`, `user_agent`, `session_id`
+
+14. **`Settings`**  
+    `key`, `value`, `value_type`, `category`, `description`, `is_system`, `updated_by`, `updated_at`
 
 ---
 

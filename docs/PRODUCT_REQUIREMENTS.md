@@ -10,11 +10,12 @@
 
 ## 1. Executive Summary & Objective
 
-The **Asset Management Portal** is an enterprise-grade platform engineered to provide end-to-end tracking, lifecycle management, financial accounting, maintenance scheduling, and custody management for both physical and digital organizational assets.
+The **Asset Management Portal** is an enterprise-grade platform engineered to provide end-to-end tracking, lifecycle management, operational inventory control, maintenance scheduling, and custody management for both physical and digital organizational assets.
 
-Modern organizations struggle with spreadsheet fragmentation, ghost assets, undocumented equipment handovers, missed warranty expirations, and unverified depreciation. The primary objective of this system is to establish a single, authoritative, audit-proof system of record that guarantees:
-- Complete custody traceability (who holds an asset, where it is located, and its current physical/operational condition).
+Modern organizations struggle with spreadsheet fragmentation, ghost assets, undocumented equipment handovers, missed warranty expirations, and missing custody tracking. The primary objective of this system is to establish a single, authoritative, audit-proof system of record that guarantees:
+- Complete custody traceability (who holds an asset, where it is located, and its current physical/operational condition, supporting both user and departmental custody).
 - Non-destructive historical transaction tracking (every assignment, transfer, repair, and check-in/check-out is immutably logged).
+- Operational financial tracking (capturing purchase cost, purchase date, useful life, and current value estimates without requiring a complex automated accounting depreciation subsystem in V1).
 - Rigorous operational workflows (structured asset checkout, approval-based hardware requests, scheduled maintenance).
 - Field-ready asset verification (mobile-friendly QR code generation, scanning, and physical audits).
 - Clean data-layer abstraction (initially backed by Google Sheets via a hardened server API, built to transition seamlessly to a relational database such as PostgreSQL without altering UI or business logic).
