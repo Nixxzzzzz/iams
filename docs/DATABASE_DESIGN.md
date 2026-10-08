@@ -18,8 +18,8 @@
    The schema records `purchase_cost`, `purchase_date`, `useful_life` (in months), and estimated `current_value`. It intentionally does not implement automated accounting depreciation calculations or tax ledger routines in V1.
 4. **Structured Category-Specific Specifications (`custom_fields`):**  
    Category-specific technical specifications (e.g., CPU/RAM for laptops, IMEI for phones, Sensor/Lens for cameras, Resolution/Lumens for projectors) are stored in a sanitized, structured JSON string column named `custom_fields`. Fixed column explosion is strictly prevented.
-5. **Configurable Authentication Identity:**  
-   Users map to future Google OAuth via `auth_provider_id` (Google `sub` claim). Organization email domains and allowed lists are stored in `Settings` rather than hardcoded into table definitions. Passwords are never stored.
+5. **Configurable Authentication Identity (Strict Configuration Required):**  
+   Users map to future Google OAuth via `auth_provider_id` (Google `sub` claim). Organization email domains and allowed lists are stored in `Settings` rather than hardcoded into table definitions. The initial default state is strictly `ALLOWED_EMAIL_DOMAINS = NOT_CONFIGURED`. Production authentication refuses unrestricted access until the administrator explicitly configures allowed corporate domains and/or specific emails. Passwords are never stored.
 6. **Non-Destructive Append-Only History:**  
    Operational events (checkouts, check-ins, transfers, condition updates, repairs, retirements) are immutably written to `Transactions`. Historical rows are never edited or overwritten.
 7. **Soft-Deletion & Lifecycle Archiving:**  
@@ -106,7 +106,7 @@ erDiagram
 | `purchase_cost` | Decimal | No | `0.00` | Non-negative numeric | `>= 0.00`, 2 decimal places | None | No | **Yes** | No |
 | `useful_life_months`| Integer | No | `36` | Integer `>= 0` | Whole number months | None | No | **Yes** | No |
 | `current_value` | Decimal | No | `0.00` | Non-negative numeric | `>= 0.00`, estimated book value | None | No | **Yes** | No |
-| `currency` | String | **Yes** | `USD` | ISO 4217 code (e.g., `USD`, `INR`) | Exactly 3 uppercase letters | None | No | **Yes** | No |
+| `currency` | String | **Yes** | `INR` | ISO 4217 code (e.g., `INR`, `USD`, `EUR`) | Exactly 3 uppercase letters | None | No | **Yes** | No |
 | `vendor_id` | String | No | `""` | `VEN-000001` | Must exist in `Vendors` if set | `Vendors.vendor_id` | No | **Yes** | **Yes** |
 | `invoice_reference` | String | No | `""` | Alphanumeric (Max 80 chars) | Optional procurement invoice ID | None | No | **Yes** | No |
 | `warranty_start`| Date | No | `""` | ISO Date: `YYYY-MM-DD` | Valid calendar date | None | No | **Yes** | No |
@@ -424,13 +424,14 @@ erDiagram
 #### Mandatory Standard System Keys Pre-Populated in `Settings`:
 1. `ORG_NAME` (`STRING`, `GENERAL`): "My Organization"
 2. `ORG_LOGO_URL` (`STRING`, `GENERAL`): ""
-3. `DEFAULT_CURRENCY` (`STRING`, `LOCALIZATION`): "USD"
-4. `TIMEZONE` (`STRING`, `LOCALIZATION`): "UTC"
-5. `DATE_FORMAT` (`STRING`, `LOCALIZATION`): "YYYY-MM-DD"
-6. `ASSET_ID_SEQUENCE` (`NUMBER`, `SEQUENCES`): "1" (Atomic counter for next asset ID)
-7. `ALLOWED_EMAIL_DOMAINS` (`JSON`, `SECURITY`): `["*"]` or `["organization.com"]` (Configurable OAuth restrictions)
-8. `WARRANTY_ALERT_THRESHOLD_DAYS` (`NUMBER`, `NOTIFICATIONS`): "30"
-9. `OVERDUE_ALERT_THRESHOLD_DAYS` (`NUMBER`, `NOTIFICATIONS`): "1"
+3. `DEFAULT_CURRENCY` (`STRING`, `LOCALIZATION`): "INR"
+4. `DEFAULT_CURRENCY_SYMBOL` (`STRING`, `LOCALIZATION`): "₹"
+5. `TIMEZONE` (`STRING`, `LOCALIZATION`): "Asia/Kolkata"
+6. `DATE_FORMAT` (`STRING`, `LOCALIZATION`): "YYYY-MM-DD"
+7. `ASSET_ID_SEQUENCE` (`NUMBER`, `SEQUENCES`): "1" (Atomic counter for next asset ID)
+8. `ALLOWED_EMAIL_DOMAINS` (`JSON`, `SECURITY`): `["NOT_CONFIGURED"]` (Explicit configuration-required state; authentication refuses open login until administrator explicitly configures allowed domains/addresses)
+9. `WARRANTY_ALERT_THRESHOLD_DAYS` (`NUMBER`, `NOTIFICATIONS`): "30"
+10. `OVERDUE_ALERT_THRESHOLD_DAYS` (`NUMBER`, `NOTIFICATIONS`): "1"
 
 ---
 
@@ -539,3 +540,10 @@ function sanitizeSheetCell(value: string): string {
 If an administrator edits the spreadsheet directly outside the application:
 1. The server-side ingestion layer runs full Zod schema validation on every row read.
 2. If invalid foreign keys, corrupted enums, or broken dates are encountered, the server logs a data integrity warning and marks the record with an operational flag rather than crashing.
+
+### 6.5 Safe Authentication Policy & Domain Enforcement
+- Production authentication must never default to open/unrestricted access.
+- `ALLOWED_EMAIL_DOMAINS` defaults strictly to `["NOT_CONFIGURED"]`.
+- If `ALLOWED_EMAIL_DOMAINS` is `["NOT_CONFIGURED"]`, empty, or unset, the server authentication layer will reject all login attempts with an explicit error (`AUTH_CONFIGURATION_REQUIRED`).
+- The administrator must explicitly configure allowed corporate domains (e.g., `["organization.com"]`) or specific allowed email addresses before user authentication is accepted.
+- No specific organization domain is hardcoded into the schema or codebase.

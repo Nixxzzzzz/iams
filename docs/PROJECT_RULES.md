@@ -23,6 +23,7 @@
 3. **No Direct Google Sheets Access from Client:** The browser frontend must never call Google Sheets API directly or possess credentials to do so. All reads and writes must pass through the Next.js API server layer.
 4. **Formula Injection Sanitization:** Every user-supplied string written to Google Sheets must be sanitized against formula execution (escaping leading `=`, `+`, `-`, `@`).
 5. **Secure Session Cookies:** Session tokens must be stored in `HttpOnly`, `Secure`, `SameSite=Lax` cookies.
+6. **Strict Authentication Policy Default:** Production authentication must never default to unrestricted/open access (`*`). The initial domain policy is strictly `ALLOWED_EMAIL_DOMAINS = NOT_CONFIGURED`. Unrestricted access is refused until explicitly configured by an administrator.
 
 ---
 

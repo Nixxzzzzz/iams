@@ -88,10 +88,10 @@ Permissions follow the standard convention: `<resource>:<action>` or `<resource>
 
 ### 5.1 Google OAuth 2.0 Ingestion Flow
 1. User clicks **"Sign in with Google"**.
-2. Handshake validates corporate email domain (e.g., `@organization.com`) against allowed domains in system settings.
-3. User profile is retrieved. If the email exists in the `Users` sheet, the user’s `user_id`, `role_id`, and `department_id` are loaded.
+2. **Domain Policy Validation:** The server evaluates `Settings.ALLOWED_EMAIL_DOMAINS`. If the setting is `["NOT_CONFIGURED"]` or empty, authentication is halted with a configuration required alert (`AUTH_CONFIGURATION_REQUIRED`). If configured, the handshake verifies that the authenticated Google email domain or exact address is present in the allowed list. Unrestricted/wildcard access is never permitted by default.
+3. User profile is retrieved. If the email exists in the `Users` sheet and status is `ACTIVE`, the user’s `user_id`, `role_id`, and `department_id` are loaded.
 4. A signed, encrypted JWT session token containing these claims is issued to an `HttpOnly, Secure, SameSite=Lax` cookie.
-5. If the user does not exist in the `Users` sheet, the system places them in a pending self-registration state or rejects access based on system configuration.
+5. If the user does not exist in the `Users` sheet, the system rejects access or places them in a pending self-registration state based on system configuration.
 
 ### 5.2 Server-Side Authorization Guard
 Every API route executes a centralized authorization guard:
