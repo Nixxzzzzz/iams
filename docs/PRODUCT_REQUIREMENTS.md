@@ -69,9 +69,9 @@ The system is partitioned into 20 core architectural modules:
 - **Focus:** Requesting equipment, viewing currently assigned gear, acknowledging receipt, and reporting faults.
 - **Key Tasks:** Submitting an asset request, acknowledging custody via digital signature/checkbox, reporting broken equipment, initiating return check-in.
 
-### Persona 5: Auditor / Viewer
-- **Focus:** Compliance, verification, and financial reporting.
-- **Key Tasks:** Generating asset depreciation summaries, viewing physical location audit reports, verifying serial numbers, exporting audit trails without modification rights.
+### Persona 5: Viewer (Operational Observer & Field Auditor)
+- **Focus:** Operational oversight, physical verification, and general inventory observation.
+- **Key Tasks:** Verifying asset tags and physical locations, inspecting equipment condition and operational status, verifying serial numbers, and viewing non-sensitive operational inventory reports without modification rights. (Strictly field-restricted from viewing purchase costs/book values, audit logs, security configurations, private documents, or employee personal contact information).
 
 ---
 
@@ -94,7 +94,7 @@ The system is partitioned into 20 core architectural modules:
 - **Data Integrity:** Idempotent mutation handling to avoid duplicate row writes during network retries.
 
 ### 4.4 Accessibility & Compliance
-- **WCAG 2.1 AA Compliance:** High-contrast text ratios (minimum 4.5:1), keyboard navigability for all tables and forms, screen-reader-friendly ARIA tags.
+- **WCAG 2.2 AA Compliance:** High-contrast text ratios (minimum 4.5:1), visible high-contrast focus rings, full keyboard navigability for all tables and forms, screen-reader-friendly ARIA tags, and support for prefers-reduced-motion.
 - **Auditability:** Immutable logging of all state transitions and permission changes.
 
 ---

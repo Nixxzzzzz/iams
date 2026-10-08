@@ -255,13 +255,14 @@ The application layout leverages Next.js App Router route groups and server layo
 │       └── /notifications/page.tsx         # Alert threshold settings
 ```
 
-### 7.1 Server-Side Data Scoping Middleware
+### 7.1 Server-Side Data Scoping Middleware & Field-Level Masking
 Every route handler and Server Component executes a centralized scoping resolver:
 ```typescript
 export interface DataScopeFilter {
   departmentId?: string;
   userId?: string;
   isUnrestricted: boolean;
+  fieldRestrictions?: string[]; // Prohibited fields for restricted roles (e.g., VIEWER)
 }
 
 export function resolveDataScope(user: AuthenticatedUser): DataScopeFilter {
@@ -269,8 +270,21 @@ export function resolveDataScope(user: AuthenticatedUser): DataScopeFilter {
     case 'SUPER_ADMIN':
     case 'ADMIN':
     case 'ASSET_MANAGER':
-    case 'VIEWER':
       return { isUnrestricted: true };
+    case 'VIEWER':
+      // Global read operational scope, but strictly field-restricted
+      return {
+        isUnrestricted: true,
+        fieldRestrictions: [
+          'purchase_cost',
+          'current_value',
+          'invoice_reference',
+          'personal_contact_info',
+          'auth_config',
+          'audit_logs',
+          'private_documents'
+        ]
+      };
     case 'DEPARTMENT_MANAGER':
       return { departmentId: user.departmentId, isUnrestricted: false };
     case 'STAFF':
@@ -278,4 +292,32 @@ export function resolveDataScope(user: AuthenticatedUser): DataScopeFilter {
   }
 }
 ```
-Queries to repositories automatically attach these filters, guaranteeing that out-of-scope records are never transmitted over the wire to unauthorized clients.
+Queries to repositories automatically attach these filters, guaranteeing that out-of-scope records and field-restricted attributes (specifically for `VIEWER`) are stripped at the serialization boundary and never transmitted over the wire to unauthorized clients.
+
+---
+
+## 8. Presentation Layer & UI/UX Design System Architecture
+
+### 8.1 Presentation Philosophy & Anti-AI Aesthetic Invariant
+The presentation tier is engineered as an enterprise operational tool for infrastructure, operations, and IT staff.
+- **Absolute Aesthetic Guardrail:** Zero AI gradients, glowing neon borders, holographic panels, particle canvases, or marketing jargon (`AI-powered`, `Smart`, `Copilot`, `Magic`).
+- **Data-First Visual Hierarchy:** Information density, contrast ratios, and structural grid borders define the visual hierarchy rather than decorative colors.
+- **Predictable Interaction Patterns:** All modules share standardized data tables, slide-out detail drawers, action buttons, and keyboard shortcuts.
+
+### 8.2 Design Token System Integration
+The presentation layer strictly enforces semantic design tokens (defined in `docs/UI_UX_GUIDELINES.md`):
+- **Neutral Palette:** High-contrast neutral slate/zinc foundations (`#F8FAFC` light canvas, `#090D16` dark canvas; `#FFFFFF` light surface, `#111827` dark surface).
+- **Restrained Semantic Accents:** Primary interactive sky/blue (`#0284C7`), Success green (`#16A34A`), Warning amber (`#D97706`), Danger red (`#DC2626`).
+- **Typography Tokens:** Strict type hierarchy based on `Inter`/System Sans and `JetBrains Mono` for hardware tags (`AST-000001`) and serial numbers.
+- **Elevation & Layout Tokens:** Consistent 4px/6px/8px radius scale, uniform 36px control heights, and dense 40px table row heights.
+
+### 8.3 Layout & Responsive Shell Architecture
+- **Desktop Shell (`>= 1024px`):** Persistent 240px collapsible sidebar, 56px sticky header with breadcrumbs and global search, and fluid main canvas capped at 1600px with 24px gutters.
+- **Tablet Shell (`768px - 1023px`):** 64px icon-rail sidebar with expandable drawer overlay, adaptive scrolling tables with sticky primary tag column.
+- **Mobile Shell (`< 768px`):** Compact 48px header, bottom operational navigation bar (60px), and card-stack transformation for tabular data with 44px minimum touch targets.
+
+### 8.4 Accessibility Architecture (WCAG 2.2 AA)
+- **High-Contrast Typography:** Minimum 4.5:1 contrast for all text (7.0:1 for tabular data).
+- **Visible Focus States:** 2px high-contrast focus rings (`#0284C7`) on all interactive controls with 2px offset.
+- **Semantic ARIA Standards:** Full screen-reader semantics for dynamic states (`aria-live`, `aria-expanded`, `role="status"`).
+- **Prefers-Reduced-Motion:** Automatic bypass of non-essential transitions when user OS reduced-motion preferences are active.

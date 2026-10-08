@@ -101,12 +101,23 @@ The system enforces access control across exactly **six approved initial roles**
   - Access administration settings, user directories, or audit logs.
 
 #### 6. VIEWER (Auditor & Observer)
-- **Authority:** Strictly read-only observer.
-- **Can:**
-  - View asset master inventory, specifications, and physical locations.
-  - View category taxonomy, departments, locations, and vendor listings.
-  - View operational reports and read-only asset histories where permitted.
-- **Cannot:**
+- **Authority:** Global read-only operational role, with strict field-level restrictions.
+- **Can View (General Operational Information):**
+  - Asset tag, asset name, category, subcategory, brand, model.
+  - Serial number where appropriate for physical identification.
+  - Operational status (`status`) and physical condition (`condition`).
+  - Current location (`location_id`) and location hierarchy.
+  - Category taxonomy, departments, locations, and vendor listings.
+  - General non-financial operational reports and read-only asset histories where permitted.
+- **Cannot Access (Field-Restricted & Confidential Data):**
+  - Purchase cost (`purchase_cost`) and current financial book value (`current_value`).
+  - Sensitive vendor financial information and invoice references (`invoice_reference`).
+  - Employee personal contact information (phone, personal email).
+  - Authentication configuration and security settings (`ALLOWED_EMAIL_DOMAINS`).
+  - Audit logs (`Audit Logs` sheet).
+  - Private documents (invoices, receipts, disposal certificates).
+  - Sensitive assignment information unless explicitly authorized.
+- **Cannot Execute (No Mutation Capabilities):**
   - Create, edit, assign, check out, check in, archive, retire, or dispose of assets.
   - Submit or approve requests.
   - Open or modify maintenance tickets.
@@ -204,8 +215,9 @@ $$\text{Access Granted} = \text{User Has Role} \land \text{Role Has Permission} 
    - `Assets`: Visible only if `Assets.current_user_id === user.user_id`. (Also allowed to view basic public specs of any asset via QR lookup).
    - `Assignments`: Visible only if `Assignments.user_id === user.user_id`.
    - `Requests`: Visible only if `Requests.requester_user_id === user.user_id`.
-   - `Notifications`: Visible only if `Notifications.user_id === user.user_id`.
-6. **VIEWER:** `READ_ONLY_SCOPE` across all non-sensitive operational inventory.
+6. **VIEWER:** `GLOBAL_READ_ONLY_OPERATIONAL_SCOPE` (with strict field-level masking):
+   - Global read visibility across general operational fields (`asset_tag`, `name`, `category`, `brand`, `model`, `serial_number`, `status`, `condition`, `location`).
+   - Strict field-level masking: Financial values (`purchase_cost`, `current_value`, `invoice_reference`), private documents, employee personal contact info, security settings, and audit logs are stripped at the API layer before serialization.
 
 ---
 
