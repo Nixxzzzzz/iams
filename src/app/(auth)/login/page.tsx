@@ -4,16 +4,21 @@ import { siteConfig } from '@/config/site';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { getAuthConfigStatus } from '@/config/env';
 
 /**
- * Authentication Entry Point Structural Placeholder
+ * Authentication Entry Point Structural Boundary
  * Route: /login
  *
- * Source of Truth: docs/ARCHITECTURE.md §3, docs/UI_UX_GUIDELINES.md §1
- * INVARIANT: No fake OAuth execution, no mock bypass, zero fake credentials.
+ * Source of Truth: docs/ARCHITECTURE.md §3, docs/PROJECT_RULES.md §2.6
+ * INVARIANT: Fail-closed when ALLOWED_EMAIL_DOMAINS is NOT_CONFIGURED.
+ * Zero demo accounts, zero bypass cookies, zero fake credentials.
  */
 
 export default function LoginPage() {
+  const authStatus = getAuthConfigStatus();
+  const isPolicyConfigured = authStatus === 'CONFIGURED';
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950 px-4 py-12">
       <Card className="w-full max-w-md shadow-sm">
@@ -30,12 +35,21 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Alert
-            variant="warning"
-            title="Authentication Pending Integration"
-          >
-            Access requires Google Workspace OAuth. Sign-in controls are disabled pending Stage 4 OAuth integration authorization.
-          </Alert>
+          {!isPolicyConfigured ? (
+            <Alert
+              variant="warning"
+              title="Authentication Policy: Unconfigured (Fail-Closed)"
+            >
+              Sign-in is currently unavailable because the organization security policy is not configured (ALLOWED_EMAIL_DOMAINS = NOT_CONFIGURED). In accordance with institutional security rules, access fails closed until an administrator configures allowed domains.
+            </Alert>
+          ) : (
+            <Alert
+              variant="info"
+              title="Identity Provider Connection Pending"
+            >
+              Domain access policy is active. Google OAuth integration will be authorized in a subsequent technical stage.
+            </Alert>
+          )}
 
           <div>
             <Button
@@ -48,9 +62,12 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Authorized Personnel Only • Access boundary enforced
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-center space-y-1">
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+              Authorized Personnel Only
+            </p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              Zero development bypass active • All connection attempts are verified server-side
             </p>
           </div>
         </CardContent>
