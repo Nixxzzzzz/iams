@@ -1,9 +1,9 @@
 # System Architecture Specification
 ## Asset Management Portal
 
-**Document Version:** 1.0.0  
-**Status:** Approved Architectural Blueprint  
-**System Paradigm:** Clean Modular Full-Stack Web Architecture  
+**Document Version:** 1.0.0
+**Status:** Approved Architectural Blueprint
+**System Paradigm:** Clean Modular Full-Stack Web Architecture
 
 ---
 
@@ -36,7 +36,7 @@ The initial persistence implementation leverages Google Sheets as an append-and-
 |                             DOMAIN & BUSINESS LAYER                               |
 |   - Asset Service         - Assignment Service    - Maintenance Service           |
 |   - Request Service       - Audit Logger          - QR & Tag Generator            |
-|   - Lifecycle State Machine                       - Depreciation Calculator       |
+|   - Lifecycle State Machine                       - Custody Transfer Controller   |
 +-----------------------------------------------------------------------------------+
                                          |
                                          v
@@ -195,3 +195,87 @@ To execute a seamless future migration to PostgreSQL:
   }
   ```
 - **Structured Logging:** Server logs record request ID, duration, caller user ID, HTTP method, status code, and any adapter latency metrics.
+
+---
+
+## 7. Application Route Hierarchy & Data-Scoping Middleware Architecture
+
+The application layout leverages Next.js App Router route groups and server layout components to cleanly separate operational views and enforce data scoping at the server layer:
+
+```text
+/app
+├── (auth)
+│   └── /login                              # Google OAuth sign-in screen
+├── (portal)                                # Protected application layout (Sidebar, Header)
+│   ├── /dashboard                          # Role-adapted dashboard overview
+│   ├── /assets
+│   │   ├── page.tsx                        # Asset inventory table (Scoped)
+│   │   ├── /new/page.tsx                   # Intake registration form
+│   │   ├── /[assetId]/page.tsx             # Master-detail asset dossier
+│   │   ├── /[assetId]/edit/page.tsx        # Asset editor
+│   │   ├── /[assetId]/history/page.tsx     # Transaction ledger timeline
+│   │   └── /[assetId]/documents/page.tsx   # Drive attachments panel
+│   ├── /categories
+│   │   ├── page.tsx                        # Category list
+│   │   └── /[categoryId]/page.tsx          # Specs schema manager
+│   ├── /assignments
+│   │   ├── page.tsx                        # Active custody contracts
+│   │   ├── /checkout/page.tsx              # Handover workflow
+│   │   ├── /checkin/page.tsx               # Return inspection workflow
+│   │   └── /[assignmentId]/page.tsx        # Custody agreement detail
+│   ├── /requests
+│   │   ├── page.tsx                        # Requisition list (My vs All)
+│   │   ├── /new/page.tsx                   # Request submission form
+│   │   ├── /approvals/page.tsx             # Dedicated manager approval queue
+│   │   └── /[requestId]/page.tsx           # Requisition lifecycle view
+│   ├── /maintenance
+│   │   ├── page.tsx                        # Service tickets table
+│   │   ├── /new/page.tsx                   # Defect report form
+│   │   └── /[maintenanceId]/page.tsx       # Diagnostics & cost closure
+│   ├── /users
+│   │   ├── page.tsx                        # Staff directory (Admin/Mgr)
+│   │   └── /[userId]/page.tsx              # User profile & custody history
+│   ├── /departments
+│   │   ├── page.tsx                        # Departments overview
+│   │   └── /[departmentId]/page.tsx        # Department detail & inventory
+│   ├── /locations
+│   │   ├── page.tsx                        # Physical site hierarchy
+│   │   └── /[locationId]/page.tsx          # Room/storage gear list
+│   ├── /vendors
+│   │   ├── page.tsx                        # Supplier & repair directory
+│   │   └── /[vendorId]/page.tsx            # Vendor contact & SLAs
+│   ├── /documents/page.tsx                 # Attached document browser
+│   ├── /reports/page.tsx                   # Operational summary & export
+│   ├── /notifications/page.tsx             # Alert inbox
+│   ├── /audit-logs/page.tsx                # Security audit activity log
+│   └── /settings
+│       ├── /general/page.tsx               # Org profile, currency (INR)
+│       ├── /authentication/page.tsx        # Google OAuth domain policy
+│       ├── /roles/page.tsx                 # Role capability inspector
+│       └── /notifications/page.tsx         # Alert threshold settings
+```
+
+### 7.1 Server-Side Data Scoping Middleware
+Every route handler and Server Component executes a centralized scoping resolver:
+```typescript
+export interface DataScopeFilter {
+  departmentId?: string;
+  userId?: string;
+  isUnrestricted: boolean;
+}
+
+export function resolveDataScope(user: AuthenticatedUser): DataScopeFilter {
+  switch (user.role) {
+    case 'SUPER_ADMIN':
+    case 'ADMIN':
+    case 'ASSET_MANAGER':
+    case 'VIEWER':
+      return { isUnrestricted: true };
+    case 'DEPARTMENT_MANAGER':
+      return { departmentId: user.departmentId, isUnrestricted: false };
+    case 'STAFF':
+      return { userId: user.userId, isUnrestricted: false };
+  }
+}
+```
+Queries to repositories automatically attach these filters, guaranteeing that out-of-scope records are never transmitted over the wire to unauthorized clients.

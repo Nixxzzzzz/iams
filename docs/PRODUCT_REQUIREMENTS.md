@@ -1,10 +1,10 @@
 # Product Requirements Document (PRD)
 ## Asset Management Portal
 
-**Document Version:** 1.0.0  
-**Status:** Draft / Architectural Baseline  
-**Project Classification:** Standalone Enterprise Web Application  
-**Target Delivery Horizon:** Phase 1 Architecture & Specifications  
+**Document Version:** 1.0.0
+**Status:** Draft / Architectural Baseline
+**Project Classification:** Standalone Enterprise Web Application
+**Target Delivery Horizon:** Phase 1 Architecture & Specifications
 
 ---
 
@@ -28,7 +28,7 @@ The system is partitioned into 20 core architectural modules:
 
 | # | Module | Scope & Core Capabilities |
 |---|---|---|
-| **01** | **Dashboard** | Operational summary view: asset count by status, active checkouts, overdue returns, pending requests, upcoming maintenance, and depreciation totals. Strictly task-focused visualizations. |
+| **01** | **Dashboard** | Operational summary view: asset count by status, active checkouts, overdue returns, pending requests, upcoming maintenance, and asset valuation totals. Strictly task-focused visualizations. |
 | **02** | **Assets** | Primary asset registry: master list, search, multi-facet filtering (category, status, department, location, condition), single and bulk asset creation, asset tagging, and complete detail views. |
 | **03** | **Categories** | Hierarchical categorization (Category & Subcategory), taxonomy definitions, depreciation rules per category, custom specification templates. |
 | **04** | **Assignments** | Direct assignment of assets to personnel, contractors, or departments; custody acknowledgment; assignment duration; condition sign-off. |
@@ -41,7 +41,7 @@ The system is partitioned into 20 core architectural modules:
 | **11** | **Vendors** | Supplier and manufacturer registry, contact points, service level agreements (SLAs), procurement history, linked warranties, and support contacts. |
 | **12** | **Documents** | File storage metadata for invoices, receipts, warranty certificates, equipment manuals, and lease agreements (stored securely via Google Drive API). |
 | **13** | **Notifications** | In-app alerts and email notifications for overdue checkouts, warranty expiration warnings, maintenance reminders, and pending request approvals. |
-| **14** | **Reports** | Pre-built and customizable reporting: asset valuation, depreciation schedules, lost/damaged frequency, department utilization, and historical turnover. |
+| **14** | **Reports** | Pre-built and customizable reporting: operational valuation summaries, lost/damaged frequency, department utilization, and historical asset turnover. |
 | **15** | **Audit Logs** | Comprehensive, immutable audit trail recording user identity, timestamp, IP/client info, action type, affected entity, before-state, and after-state. |
 | **16** | **Google Sheets Sync** | Bidirectional synchronization engine, validation pipeline, schema enforcement, rate-limit queue management, and synchronization health telemetry. |
 | **17** | **Import / Export** | Bulk CSV/XLSX data import with schema validation and dry-run preview; standard report exports (CSV, Excel, PDF asset tags). |

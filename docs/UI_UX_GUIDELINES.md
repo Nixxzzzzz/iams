@@ -1,15 +1,15 @@
 # UI/UX & Enterprise Design Guidelines
 ## Asset Management Portal
 
-**Document Version:** 1.0.0  
-**Design Standard:** Professional Enterprise Software  
-**Aesthetic Persona:** Clean, High-Density, Functional Utility  
+**Document Version:** 1.0.0
+**Design Standard:** Professional Enterprise Software
+**Aesthetic Persona:** Clean, High-Density, Functional Utility
 
 ---
 
 ## 1. Core Design Philosophy: Serious Enterprise Software
 
-The **Asset Management Portal** is a business-critical operational tool designed for inventory managers, sysadmins, finance controllers, and department leads who work in the system daily. 
+The **Asset Management Portal** is a business-critical operational tool designed for inventory managers, sysadmins, finance controllers, and department leads who work in the system daily.
 
 The software must feel **fast, predictable, highly legible, information-dense, and rock-solid**. Functionality, ergonomic keyboard navigation, and immediate data clarity always take precedence over decorative visuals.
 
@@ -108,3 +108,143 @@ Each operational workflow uses an interface tailored to the nature of the data:
 2. **Form Accessibility:** Explicit `<label>` elements connected via `htmlFor` to corresponding inputs; error states communicated via `aria-invalid="true"` and `aria-describedby`.
 3. **Screen Reader Semantic Structure:** Proper heading tree (`h1`, `h2`, `h3`), tables with `<th scope="col">` headers, and icon buttons equipped with `aria-label` tags.
 4. **Motion Restraint:** All transitions configured with `@media (prefers-reduced-motion: reduce)` to disable unnecessary sliding animations.
+
+---
+
+## 7. Exhaustive Page Responsibilities & UI Specifications
+
+Every proposed route is bound to a strict information architecture contract:
+
+### 7.1 Page: `/dashboard`
+- **Purpose:** Central operational overview tailored to user role.
+- **Access:** All roles (`SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER`, `DEPARTMENT_MANAGER`, `STAFF`, `VIEWER`).
+- **Required Data:** Asset count summaries, active checkouts, overdue return count, pending approval badges, recent activity feed.
+- **Available Actions:** Quick-actions: "Scan QR", "New Asset Request", "Check Out Asset" (Manager), "Report Defect".
+- **Empty State:** Clean banner: "All inventory operations are current. No pending approvals or overdue returns."
+- **Loading State:** Neutral skeleton cards mimicking stat boxes and table layout.
+- **Error State:** Standard Alert card with retry button: "Unable to load dashboard metrics. Check server connection."
+- **Mobile Behavior:** Single-column stacked widgets; sticky quick-action bar at top with QR scan trigger.
+
+### 7.2 Page: `/assets`
+- **Purpose:** Master searchable, filterable high-density inventory data table.
+- **Access:** All roles (scoped by role: Global for Admins/Asset Mgrs; Department-scoped for Dept Mgrs; Self-scoped for Staff).
+- **Required Data:** Paginated assets, category dictionary, department dictionary, location dictionary.
+- **Available Actions:** Row click opens Detail Drawer; multi-select export (CSV); "Add Asset" button (Admins/Asset Mgrs).
+- **Filters:** Category (multi-select), Status (multi-select), Condition, Custody Type (`USER`/`DEPARTMENT`), Location, Department.
+- **Search:** Instant debounced text input searching `asset_tag`, `name`, `serial_number`, `brand`, `model`.
+- **Sorting:** By `asset_id`, `name`, `status`, `condition`, `purchase_date`, `purchase_cost`. Default: `updated_at DESC`.
+- **Pagination:** Server-backed (25, 50, 100 rows per page) with total count and current range.
+- **Empty State:** Centered state card: "No assets found matching your filter criteria. [Clear Filters]".
+- **Loading State:** 10-row tabular shimmer skeleton.
+- **Error State:** In-table error banner with retry trigger.
+- **Mobile Behavior:** Transforms table rows into swipeable cards displaying Tag, Brand/Model, Status Badge, and Location.
+
+### 7.3 Page: `/assets/new`
+- **Purpose:** Data entry form for cataloging new physical or digital gear.
+- **Access:** `SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER`.
+- **Required Data:** Categories (with `spec_schema_json`), Locations, Departments, Vendors, Currency default (INR).
+- **Available Actions:** Save & View, Save & Add Another, Cancel.
+- **Validation:** Zod client & server validation on all mandatory fields; serial number uniqueness check.
+- **Empty State:** N/A (Form).
+- **Loading State:** Form field skeleton loader while reference dictionaries fetch.
+- **Error State:** Top-level alert with inline red border highlights and error strings under failing inputs.
+- **Mobile Behavior:** Stacked single-column input layout with sticky bottom save button.
+
+### 7.4 Page: `/assets/[assetId]`
+- **Purpose:** Complete master-detail dossier for a specific asset.
+- **Access:** Authorized users within data scope.
+- **Required Data:** Asset entity, active assignment, category, location hierarchy, vendor details, recent transactions, linked documents.
+- **Available Actions:** Print QR Label, Edit Asset, Check Out / Assign, Check In (if in use), Open Maintenance Ticket, Archive / Retire.
+- **Tabs:**
+  1. Overview (Specifications, dynamic category fields, financial details).
+  2. Custody & Assignments (Active holder, expected return, handover history).
+  3. Maintenance (Ticket history, recorded costs, diagnostic notes).
+  4. Documents (Drive invoices, warranty cards, manuals).
+  5. Audit History (Immutable transaction timeline).
+- **Mobile Behavior:** Horizontal scrollable tabs; sticky header displaying Tag (`AST-000001`) and Status badge.
+
+### 7.5 Page: `/assignments/checkout`
+- **Purpose:** Controlled workflow for checking out or assigning equipment.
+- **Access:** `SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER`.
+- **Required Data:** Available assets list, User directory, Department directory, Accessories checklist.
+- **Available Actions:** Select Asset, Choose Custody Type (`USER` or `DEPARTMENT`), Select Assignee, Select Assignment Type (`LONG_TERM` or `TEMPORARY_CHECKOUT`), Set Expected Return Date, Condition Sign-off, Complete Checkout.
+- **Validation:** Enforces asset is in `AVAILABLE` status. Exactly one assignee selected.
+- **Mobile Behavior:** Step-by-step wizard style on mobile viewports for ergonomic touch completion.
+
+### 7.6 Page: `/assignments/checkin`
+- **Purpose:** Intake, return inspection, and condition reassessment workflow.
+- **Access:** `SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER`.
+- **Required Data:** Active assignments roster, QR lookup engine, return location hierarchy.
+- **Available Actions:** Scan QR tag to pull active assignment, verify accessories returned, assess returned condition (`NEW` to `DAMAGED`), select return storage shelf/room, flag damage (opens maintenance ticket), Confirm Check-In.
+- **Mobile Behavior:** Direct integration with mobile camera stream for instant scan-to-checkin.
+
+### 7.7 Page: `/requests/approvals`
+- **Purpose:** Consolidated requisition review queue for authorizing managers.
+- **Access:** `SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER`, `DEPARTMENT_MANAGER`.
+- **Required Data:** Requests matching manager's approval level (Dept approval vs Asset allocation).
+- **Available Actions:** Approve request, Reject request (with mandatory comment modal), Allocate specific asset (Asset Mgr).
+- **Filters:** Queue stage (`PENDING_DEPT`, `PENDING_ASSET`), Urgency (`LOW` to `URGENT`), Department.
+- **Empty State:** "Your approval queue is clear. No pending equipment requisitions."
+- **Mobile Behavior:** High-priority cards with explicit side-by-side green "Approve" and red "Reject" action buttons.
+
+### 7.8 Page: `/maintenance`
+- **Purpose:** Maintenance and defect tracking ledger.
+- **Access:** `SUPER_ADMIN`, `ADMIN`, `ASSET_MANAGER` (Full); `DEPARTMENT_MANAGER`, `VIEWER` (Read); `STAFF` (View own reported issues).
+- **Required Data:** Maintenance tickets, linked assets, assigned technicians, vendor directory.
+- **Available Actions:** "Report Defect", Update Status (`SCHEDULED` -> `IN_PROGRESS` -> `COMPLETED`), Record Actual Cost, Close Ticket.
+- **Filters:** Status, Priority, Maintenance Type, Vendor.
+- **Mobile Behavior:** Compact cards with prominent priority pill badges (`CRITICAL`, `HIGH`).
+
+### 7.9 Page: `/settings/authentication`
+- **Purpose:** Google OAuth domain security policy manager.
+- **Access:** Strictly `SUPER_ADMIN`.
+- **Required Data:** Current `Settings.ALLOWED_EMAIL_DOMAINS` value.
+- **Available Actions:** Add allowed domain, Remove allowed domain, Add individual allowed email, Save Domain Policy.
+- **Safety Rule:** Disallows saving wildcard `*` allow-all policies in production. Displays clear notice that unset policies fail closed (`AUTH_CONFIGURATION_REQUIRED`).
+
+---
+
+## 8. Professional Operational Terminology & Lexicon
+
+To maintain enterprise rigor and credibility, the system strictly enforces operational terminology across all labels, headers, and tooltips:
+
+| Approved Enterprise Operational Term | Prohibited Casual / AI Buzzword | Rationale |
+|---|---|---|
+| **Operational Overview / Dashboard** | ~~AI Command Center~~, ~~AI Insights~~ | Professional, task-oriented clarity. |
+| **Asset Master Registry** | ~~Smart Asset Brain~~, ~~Asset Intelligence Hub~~ | Standard enterprise asset inventory terminology. |
+| **Hardware Requisition** | ~~AI Auto-Requisition~~ | Reflects formal organizational approval workflows. |
+| **Defect / Service Ticket** | ~~Smart Diagnostics~~ | Standard ITIL maintenance terminology. |
+| **Custody Handover / Allocation**| ~~Smart Ownership~~ | Legal and operational clarity for equipment custody. |
+| **Inventory Verification / Audit**| ~~AI Stock Audit~~ | Focuses on verifiable physical barcode/QR scans. |
+| **Depreciation & Valuation** | ~~Predictive Financial Intelligence~~ | Reflects explicit mathematical purchase cost data. |
+| **Activity Audit Log** | ~~System Neural Trail~~ | Compliance and audit-standard naming. |
+
+---
+
+## 9. Mobile Information Architecture & Field Operational Layout
+
+Technicians and warehouse managers require fast, tactile mobile interactions:
+
+```
++----------------------------------------------------------------------------------------------------+
+|                                    MOBILE WORKFLOW WIREFRAME (PWA)                                 |
++----------------------------------------------------------------------------------------------------+
+|  [Header]  (Hamburger Menu)        ASSET PORTAL                  (User Avatar / Org)               |
+|  ------------------------------------------------------------------------------------------------  |
+|  [Sticky Bar]  [ Quick Scan QR 📷 ]                  [ + New Requisition ]                        |
+|  ------------------------------------------------------------------------------------------------  |
+|  [Operational Cards Stack]                                                                         |
+|  +----------------------------------------------------------------------------------------------+  |
+|  | AST-000109  •  ThinkPad P1 Gen 5                                    [ ASSIGNED ]             |  |
+|  | Serial: PF-39X921  •  Category: Laptops  •  Condition: GOOD                                   |  |
+|  | Custodian: Rahul Sharma (Computer Science)                                                   |  |
+|  | [ Quick View ]                                                        [ Check-In / Return ]  |  |
+|  +----------------------------------------------------------------------------------------------+  |
+|  | AST-000204  •  Epson PowerLite 2250U                                [ AVAILABLE ]            |  |
+|  | Serial: EP-992144  •  Location: Room 204 Cabinet A                  Condition: EXCELLENT     |  |
+|  | [ Check-Out ]                                                         [ Print Tag ]          |  |
+|  +----------------------------------------------------------------------------------------------+  |
+|  ------------------------------------------------------------------------------------------------  |
+|  [Bottom Bar]  (📊 Dashboard)   (📦 Assets)   (📷 Scan)   (📋 Requests)   (⚙️ More)                 |
++----------------------------------------------------------------------------------------------------+
+```
