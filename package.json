@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
-    "test": "tsc --noEmit false --outDir dist-test --target ES2022 --module NodeNext --moduleResolution NodeNext && node -r ./tests/register.cjs --test dist-test/tests/stage1-foundation.test.js dist-test/tests/stage2-design-system.test.js dist-test/tests/stage3-shell-auth.test.js"
+    "test": "tsc --noEmit false --outDir dist-test --target ES2022 --module NodeNext --moduleResolution NodeNext && node -r ./tests/register.cjs --test dist-test/tests/stage1-foundation.test.js dist-test/tests/stage2-design-system.test.js dist-test/tests/stage3-shell-auth.test.js dist-test/tests/stage4-asset-inventory.test.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",

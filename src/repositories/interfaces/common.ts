@@ -13,6 +13,7 @@ export interface PaginationParams {
 
 export interface PaginatedResult<T> {
   items: T[];
+  data: T[];
   total: number;
   page: number;
   limit: number;

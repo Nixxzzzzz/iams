@@ -13,6 +13,10 @@ const envSchema = z.object({
   ALLOWED_EMAIL_DOMAINS: z.string().default(AUTH_DEFAULTS.ALLOWED_EMAIL_DOMAINS_NOT_CONFIGURED),
   // Optional allowed specific emails (comma-separated)
   ALLOWED_EMAILS: z.string().default(''),
+  // Google Sheets Integration (Phase 1 persistence layer)
+  GOOGLE_SPREADSHEET_ID: z.string().default(''),
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().default(''),
+  GOOGLE_PRIVATE_KEY: z.string().default(''),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -64,4 +68,38 @@ export function getAuthConfigStatus(allowedDomainsInput?: string): AuthConfigSta
   }
 
   return 'CONFIGURED';
+}
+
+/**
+ * Checks whether Google Sheets persistence is fully configured.
+ * Requires GOOGLE_SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, and GOOGLE_PRIVATE_KEY.
+ */
+export function isGoogleSheetsConfigured(envInput?: Env): boolean {
+  const env = envInput ?? getEnv();
+  return Boolean(
+    env.GOOGLE_SPREADSHEET_ID.trim() &&
+    env.GOOGLE_SERVICE_ACCOUNT_EMAIL.trim() &&
+    env.GOOGLE_PRIVATE_KEY.trim()
+  );
+}
+
+/**
+ * Returns Google Sheets connection parameters or throws if not configured.
+ */
+export function getGoogleSheetsConfig(envInput?: Env): {
+  spreadsheetId: string;
+  clientEmail: string;
+  privateKey: string;
+} {
+  const env = envInput ?? getEnv();
+  if (!isGoogleSheetsConfigured(env)) {
+    throw new Error(
+      'Google Sheets integration is not configured. Missing GOOGLE_SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, or GOOGLE_PRIVATE_KEY.'
+    );
+  }
+  return {
+    spreadsheetId: env.GOOGLE_SPREADSHEET_ID.trim(),
+    clientEmail: env.GOOGLE_SERVICE_ACCOUNT_EMAIL.trim(),
+    privateKey: env.GOOGLE_PRIVATE_KEY.trim(),
+  };
 }
